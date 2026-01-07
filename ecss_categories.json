@@ -1,0 +1,700 @@
+{
+  "categories": {
+    "resistor": {
+      "display_name": "Resistor",
+      "math_model": "resistor",
+      "fields": {
+        "technology": {
+          "label": "Technology",
+          "type": "enum",
+          "values": [
+            "thin_film",
+            "thick_film",
+            "wirewound"
+          ],
+          "default": "thick_film",
+          "unit": null,
+          "help": "Resistor construction / technology."
+        },
+        "power_rating_w": {
+          "label": "Rated Power",
+          "type": "float",
+          "default": 0.125,
+          "unit": "W",
+          "help": "Rated power used to compute P_applied / P_rated."
+        },
+        "applied_power_w": {
+          "label": "Applied Power",
+          "type": "float",
+          "default": 0.05,
+          "unit": "W",
+          "help": "Estimated dissipated power in operation."
+        },
+        "quality_level": {
+          "label": "Quality Level",
+          "type": "enum",
+          "values": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "default": "B",
+          "unit": null,
+          "help": "Component quality / screening level."
+        },
+        "environment": {
+          "label": "Environment",
+          "type": "enum",
+          "values": [
+            "GB",
+            "GF",
+            "GM",
+            "LA",
+            "OR"
+          ],
+          "default": "GB",
+          "unit": null,
+          "help": "Operating environment (Ground, Launch, Orbit...)."
+        },
+        "temperature_c": {
+          "label": "Operating Temperature",
+          "type": "float",
+          "default": 25.0,
+          "unit": "\u00b0C",
+          "help": "Expected resistor temperature in operation."
+        }
+      }
+    },
+    "capacitor_ceramic": {
+      "display_name": "Ceramic Capacitor",
+      "math_model": "capacitor",
+      "subtype": "ceramic",
+      "fields": {
+        "dielectric_class": {
+          "label": "Dielectric Class",
+          "type": "enum",
+          "values": [
+            "class_1",
+            "class_2"
+          ],
+          "default": "class_2",
+          "unit": null,
+          "help": "Dielectric class (e.g. NP0/C0G, X7R)."
+        },
+        "rated_voltage_v": {
+          "label": "Rated Voltage",
+          "type": "float",
+          "default": 50.0,
+          "unit": "V",
+          "help": "Maximum rated voltage."
+        },
+        "applied_voltage_v": {
+          "label": "Applied Voltage",
+          "type": "float",
+          "default": 12.0,
+          "unit": "V",
+          "help": "Maximum applied voltage in operation."
+        },
+        "quality_level": {
+          "label": "Quality Level",
+          "type": "enum",
+          "values": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "default": "B",
+          "unit": null,
+          "help": "Component quality / screening level."
+        },
+        "environment": {
+          "label": "Environment",
+          "type": "enum",
+          "values": [
+            "GB",
+            "GF",
+            "GM",
+            "LA",
+            "OR"
+          ],
+          "default": "GB",
+          "unit": null,
+          "help": "Operating environment."
+        },
+        "temperature_c": {
+          "label": "Operating Temperature",
+          "type": "float",
+          "default": 25.0,
+          "unit": "\u00b0C",
+          "help": "Expected capacitor temperature in operation."
+        }
+      }
+    },
+    "capacitor_tantalum": {
+      "display_name": "Tantalum Capacitor",
+      "math_model": "capacitor",
+      "subtype": "tantalum",
+      "fields": {
+        "construction": {
+          "label": "Construction",
+          "type": "enum",
+          "values": [
+            "solid",
+            "wet"
+          ],
+          "default": "solid",
+          "unit": null,
+          "help": "Tantalum capacitor construction."
+        },
+        "rated_voltage_v": {
+          "label": "Rated Voltage",
+          "type": "float",
+          "default": 25.0,
+          "unit": "V",
+          "help": "Maximum rated voltage."
+        },
+        "applied_voltage_v": {
+          "label": "Applied Voltage",
+          "type": "float",
+          "default": 5.0,
+          "unit": "V",
+          "help": "Maximum applied voltage in operation."
+        },
+        "quality_level": {
+          "label": "Quality Level",
+          "type": "enum",
+          "values": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "default": "B",
+          "unit": null,
+          "help": "Component quality / screening level."
+        },
+        "environment": {
+          "label": "Environment",
+          "type": "enum",
+          "values": [
+            "GB",
+            "GF",
+            "GM",
+            "LA",
+            "OR"
+          ],
+          "default": "GB",
+          "unit": null,
+          "help": "Operating environment."
+        },
+        "temperature_c": {
+          "label": "Operating Temperature",
+          "type": "float",
+          "default": 25.0,
+          "unit": "\u00b0C",
+          "help": "Expected capacitor temperature in operation."
+        }
+      }
+    },
+    "diode": {
+      "display_name": "Diode",
+      "math_model": "diode",
+      "fields": {
+        "type": {
+          "label": "Type",
+          "type": "enum",
+          "values": [
+            "small_signal",
+            "power",
+            "zener"
+          ],
+          "default": "small_signal",
+          "unit": null,
+          "help": "Diode type (used as ECSS subtype)."
+        },
+        "rated_current_a": {
+          "label": "Rated Current",
+          "type": "float",
+          "default": 1.0,
+          "unit": "A",
+          "help": "Rated forward current."
+        },
+        "applied_current_a": {
+          "label": "Applied Current",
+          "type": "float",
+          "default": 0.2,
+          "unit": "A",
+          "help": "Maximum forward current in operation."
+        },
+        "quality_level": {
+          "label": "Quality Level",
+          "type": "enum",
+          "values": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "default": "B",
+          "unit": null,
+          "help": "Component quality / screening level."
+        },
+        "environment": {
+          "label": "Environment",
+          "type": "enum",
+          "values": [
+            "GB",
+            "GF",
+            "GM",
+            "LA",
+            "OR"
+          ],
+          "default": "GB",
+          "unit": null,
+          "help": "Operating environment."
+        },
+        "junction_temperature_c": {
+          "label": "Junction Temperature",
+          "type": "float",
+          "default": 55.0,
+          "unit": "\u00b0C",
+          "help": "Estimated junction temperature."
+        }
+      }
+    },
+    "bjt": {
+      "display_name": "Bipolar Transistor",
+      "math_model": "bjt",
+      "fields": {
+        "device_class": {
+          "label": "Device Class",
+          "type": "enum",
+          "values": [
+            "small_signal",
+            "power"
+          ],
+          "default": "small_signal",
+          "unit": null,
+          "help": "Use 'small_signal' or 'power' to match ECSS subtype."
+        },
+        "rated_current_a": {
+          "label": "Rated Collector Current",
+          "type": "float",
+          "default": 0.5,
+          "unit": "A",
+          "help": "Rated collector current."
+        },
+        "applied_current_a": {
+          "label": "Applied Collector Current",
+          "type": "float",
+          "default": 0.1,
+          "unit": "A",
+          "help": "Maximum current in operation."
+        },
+        "quality_level": {
+          "label": "Quality Level",
+          "type": "enum",
+          "values": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "default": "B",
+          "unit": null,
+          "help": "Component quality / screening level."
+        },
+        "environment": {
+          "label": "Environment",
+          "type": "enum",
+          "values": [
+            "GB",
+            "GF",
+            "GM",
+            "LA",
+            "OR"
+          ],
+          "default": "GB",
+          "unit": null,
+          "help": "Operating environment."
+        },
+        "junction_temperature_c": {
+          "label": "Junction Temperature",
+          "type": "float",
+          "default": 55.0,
+          "unit": "\u00b0C",
+          "help": "Estimated junction temperature."
+        }
+      }
+    },
+    "mosfet": {
+      "display_name": "MOSFET",
+      "math_model": "mosfet",
+      "fields": {
+        "device_class": {
+          "label": "Device Class",
+          "type": "enum",
+          "values": [
+            "small_signal",
+            "power"
+          ],
+          "default": "power",
+          "unit": null,
+          "help": "Use 'small_signal' or 'power' to match ECSS subtype."
+        },
+        "rated_current_a": {
+          "label": "Rated Drain Current",
+          "type": "float",
+          "default": 5.0,
+          "unit": "A",
+          "help": "Rated drain current."
+        },
+        "applied_current_a": {
+          "label": "Applied Drain Current",
+          "type": "float",
+          "default": 1.0,
+          "unit": "A",
+          "help": "Maximum current in operation."
+        },
+        "quality_level": {
+          "label": "Quality Level",
+          "type": "enum",
+          "values": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "default": "B",
+          "unit": null,
+          "help": "Component quality / screening level."
+        },
+        "environment": {
+          "label": "Environment",
+          "type": "enum",
+          "values": [
+            "GB",
+            "GF",
+            "GM",
+            "LA",
+            "OR"
+          ],
+          "default": "GB",
+          "unit": null,
+          "help": "Operating environment."
+        },
+        "junction_temperature_c": {
+          "label": "Junction Temperature",
+          "type": "float",
+          "default": 85.0,
+          "unit": "\u00b0C",
+          "help": "Estimated junction temperature."
+        }
+      }
+    },
+    "ic_digital": {
+      "display_name": "Digital IC",
+      "math_model": "ic",
+      "subtype": "digital",
+      "fields": {
+        "technology": {
+          "label": "Technology",
+          "type": "enum",
+          "values": [
+            "CMOS",
+            "BiCMOS",
+            "TTL",
+            "other"
+          ],
+          "default": "CMOS",
+          "unit": null,
+          "help": "Logic family / technology (used as subtype)."
+        },
+        "quality_level": {
+          "label": "Quality Level",
+          "type": "enum",
+          "values": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "default": "B",
+          "unit": null,
+          "help": "Component quality / screening level."
+        },
+        "environment": {
+          "label": "Environment",
+          "type": "enum",
+          "values": [
+            "GB",
+            "GF",
+            "GM",
+            "LA",
+            "OR"
+          ],
+          "default": "GB",
+          "unit": null,
+          "help": "Operating environment."
+        },
+        "junction_temperature_c": {
+          "label": "Junction Temperature",
+          "type": "float",
+          "default": 55.0,
+          "unit": "\u00b0C",
+          "help": "Estimated junction temperature."
+        }
+      }
+    },
+    "ic_analog": {
+      "display_name": "Analog / Mixed-signal IC",
+      "math_model": "ic",
+      "subtype": "analog",
+      "fields": {
+        "technology": {
+          "label": "Technology",
+          "type": "enum",
+          "values": [
+            "BiCMOS",
+            "Bipolar",
+            "CMOS",
+            "other"
+          ],
+          "default": "BiCMOS",
+          "unit": null,
+          "help": "IC technology (used as subtype)."
+        },
+        "quality_level": {
+          "label": "Quality Level",
+          "type": "enum",
+          "values": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "default": "B",
+          "unit": null,
+          "help": "Component quality / screening level."
+        },
+        "environment": {
+          "label": "Environment",
+          "type": "enum",
+          "values": [
+            "GB",
+            "GF",
+            "GM",
+            "LA",
+            "OR"
+          ],
+          "default": "GB",
+          "unit": null,
+          "help": "Operating environment."
+        },
+        "junction_temperature_c": {
+          "label": "Junction Temperature",
+          "type": "float",
+          "default": 55.0,
+          "unit": "\u00b0C",
+          "help": "Estimated junction temperature."
+        }
+      }
+    },
+    "fpga": {
+      "display_name": "FPGA / Complex Digital IC",
+      "math_model": "ic",
+      "subtype": "fpga",
+      "fields": {
+        "technology": {
+          "label": "Technology",
+          "type": "enum",
+          "values": [
+            "SRAM",
+            "Flash",
+            "Antifuse",
+            "other"
+          ],
+          "default": "SRAM",
+          "unit": null,
+          "help": "FPGA technology (used as subtype)."
+        },
+        "quality_level": {
+          "label": "Quality Level",
+          "type": "enum",
+          "values": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "default": "B",
+          "unit": null,
+          "help": "Component quality / screening level."
+        },
+        "environment": {
+          "label": "Environment",
+          "type": "enum",
+          "values": [
+            "GB",
+            "GF",
+            "GM",
+            "LA",
+            "OR"
+          ],
+          "default": "GB",
+          "unit": null,
+          "help": "Operating environment."
+        },
+        "junction_temperature_c": {
+          "label": "Junction Temperature",
+          "type": "float",
+          "default": 55.0,
+          "unit": "\u00b0C",
+          "help": "Estimated junction temperature."
+        }
+      }
+    },
+    "connector": {
+      "display_name": "Connector",
+      "math_model": "connector",
+      "fields": {
+        "n_pins": {
+          "label": "Number of Pins",
+          "type": "int",
+          "default": 10,
+          "unit": "pins",
+          "help": "Total number of contacts."
+        },
+        "mating_cycles": {
+          "label": "Mating Cycles",
+          "type": "int",
+          "default": 10,
+          "unit": "cycles",
+          "help": "Planned mating cycles over mission."
+        },
+        "quality_level": {
+          "label": "Quality Level",
+          "type": "enum",
+          "values": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "default": "B",
+          "unit": null,
+          "help": "Component quality / screening level."
+        },
+        "environment": {
+          "label": "Environment",
+          "type": "enum",
+          "values": [
+            "GB",
+            "GF",
+            "GM",
+            "LA",
+            "OR"
+          ],
+          "default": "GB",
+          "unit": null,
+          "help": "Operating environment."
+        }
+      }
+    },
+    "converter": {
+      "display_name": "DC/DC Converter",
+      "math_model": "converter",
+      "fields": {
+        "power_rating_w": {
+          "label": "Rated Power",
+          "type": "float",
+          "default": 5.0,
+          "unit": "W",
+          "help": "Approximate rated output power of the converter."
+        },
+        "quality_level": {
+          "label": "Quality Level",
+          "type": "enum",
+          "values": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "default": "B",
+          "unit": null,
+          "help": "Component quality / screening level."
+        },
+        "environment": {
+          "label": "Environment",
+          "type": "enum",
+          "values": [
+            "GB",
+            "GF",
+            "GM",
+            "LA",
+            "OR"
+          ],
+          "default": "GB",
+          "unit": null,
+          "help": "Operating environment."
+        }
+      }
+    },
+    "inductor": {
+      "display_name": "Inductor / Transformer",
+      "math_model": "inductor",
+      "fields": {
+        "inductor_type": {
+          "label": "Type",
+          "type": "enum",
+          "values": [
+            "power",
+            "signal"
+          ],
+          "default": "power",
+          "unit": null,
+          "help": "Power inductors / transformers vs small-signal."
+        },
+        "power_loss_w": {
+          "label": "Power Loss",
+          "type": "float",
+          "default": 0.1,
+          "unit": "W",
+          "help": "Estimated power dissipated in the magnetic part."
+        },
+        "surface_area_cm2": {
+          "label": "Radiating Surface",
+          "type": "float",
+          "default": 100.0,
+          "unit": "cm\u00b2",
+          "help": "Approximate external surface area of the part."
+        },
+        "ambient_temperature_c": {
+          "label": "Ambient Temperature",
+          "type": "float",
+          "default": 25.0,
+          "unit": "\u00b0C",
+          "help": "Ambient temperature around the part."
+        }
+      }
+    },
+    "crystal": {
+      "display_name": "Crystal / Oscillator",
+      "math_model": "crystal",
+      "fields": {}
+    },
+    "battery": {
+      "display_name": "Battery",
+      "math_model": "battery",
+      "fields": {}
+    },
+    "relay": {
+      "display_name": "Relay",
+      "math_model": "relay",
+      "fields": {}
+    }
+  }
+}

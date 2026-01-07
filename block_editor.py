@@ -7,8 +7,7 @@ Drag-and-drop canvas for defining reliability topology.
 import wx
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
-from .reliability_core import ConnectionType
-
+from .reliability_math import ConnectionType
 
 @dataclass
 class Block:

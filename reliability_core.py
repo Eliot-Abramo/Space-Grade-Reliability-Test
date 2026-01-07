@@ -11,10 +11,6 @@ from dataclasses import dataclass
 from typing import Dict, List, Any
 from enum import Enum
 
-
-from .reliability_math import ComponentParams, component_failure_rate as ecss_component_failure_rate
-
-
 class ConnectionType(Enum):
     """Types of reliability connections."""
     SERIES = "series"
@@ -326,22 +322,7 @@ def calculate_lambda(component_class: str, params: Dict[str, Any] = None) -> flo
     """
     if params is None:
         params = {}
-
-    # ECSS-style path: if ECSS category is provided, use centralized ECSS math
-    if params.get("ecss_category"):
-        cp = ComponentParams(
-            category=params.get("ecss_category"),
-            subtype=params.get("ecss_subtype", "default"),
-            quality=params.get("ecss_quality", "B"),
-            environment=params.get("ecss_environment", "GB"),
-            stress_ratio=params.get("ecss_stress_ratio", 0.5),
-            temperature=params.get("ecss_temperature", params.get("t_ambient", 25.0)),
-            mission_time_hours=params.get("mission_hours", 1.0),
-            quantity=params.get("ecss_quantity", params.get("quantity", 1)),
-            extra=params.get("ecss_extra", {}),
-        )
-        return ecss_component_failure_rate(cp)
-
+    
     cls = component_class.lower()
     n_cycles = params.get("n_cycles", 5256)
     delta_t = params.get("delta_t", 3.0)
