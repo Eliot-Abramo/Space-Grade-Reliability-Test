@@ -11,14 +11,14 @@ import wx.lib.scrolledpanel as scrolled
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-from block_editor import BlockEditor, Block
-from reliability_core import (
+from .block_editor import BlockEditor, Block
+from .reliability_core import (
     ConnectionType, calculate_lambda, reliability, lambda_from_reliability,
     r_series, r_parallel, r_k_of_n, COMPONENT_CLASSES
 )
-from schematic_parser import SchematicParser, create_test_data
+from .schematic_parser import SchematicParser, create_test_data
 
-from ecss_fields import ECSS_FIELDS, get_category_fields, infer_category_from_class
+from .ecss_fields import ECSS_FIELDS, get_category_fields, infer_category_from_class
 
 
 class SheetPanel(wx.Panel):

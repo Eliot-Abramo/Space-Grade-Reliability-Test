@@ -12,7 +12,7 @@ from typing import Dict, List, Any
 from enum import Enum
 
 
-from reliability_math import ComponentParams, component_failure_rate as ecss_component_failure_rate
+from .reliability_math import ComponentParams, component_failure_rate as ecss_component_failure_rate
 
 
 class ConnectionType(Enum):
