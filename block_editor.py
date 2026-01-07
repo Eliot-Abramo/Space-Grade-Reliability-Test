@@ -23,7 +23,7 @@ class Block:
     lambda_val: float = 0.0
     is_group: bool = False
     children: List[str] = field(default_factory=list)
-    connection_type: ConnectionType = ConnectionType.SERIES
+    connection_type: str = "series"
     k_value: int = 2
     
     def contains(self, px: int, py: int) -> bool:
@@ -98,7 +98,7 @@ class BlockEditor(wx.Panel):
         # Create root group if needed
         if self.root_id is None:
             root = Block(id="__root__", name="System", label="System",
-                        is_group=True, connection_type=ConnectionType.SERIES)
+                        is_group=True, connection_type="series")
             self.blocks["__root__"] = root
             self.root_id = "__root__"
         
@@ -129,7 +129,7 @@ class BlockEditor(wx.Panel):
         self.Refresh()
         self._notify_change()
     
-    def create_group(self, block_ids: List[str], conn_type: ConnectionType, k: int = 2) -> Optional[str]:
+    def create_group(self, block_ids: List[str], conn_type: str, k: int = 2) -> Optional[str]:
         """Group blocks together."""
         if len(block_ids) < 2:
             return None
@@ -143,9 +143,9 @@ class BlockEditor(wx.Panel):
         max_y = max(self.blocks[bid].y + self.blocks[bid].height for bid in block_ids)
         
         label = {
-            ConnectionType.SERIES: "SERIES",
-            ConnectionType.PARALLEL: "PARALLEL",
-            ConnectionType.K_OF_N: f"{k}-of-{len(block_ids)}"
+            "series": "SERIES",
+            "parallel": "PARALLEL",
+            "k_of_n": f"{k}-of-{len(block_ids)}"
         }[conn_type]
         
         group = Block(
@@ -326,9 +326,9 @@ class BlockEditor(wx.Panel):
     
     def _draw_group(self, gc, g: Block):
         color = {
-            ConnectionType.SERIES: self.SERIES_COLOR,
-            ConnectionType.PARALLEL: self.PARALLEL_COLOR,
-            ConnectionType.K_OF_N: self.KN_COLOR,
+            "series": self.SERIES_COLOR,
+            "parallel": self.PARALLEL_COLOR,
+            "k_of_n": self.KN_COLOR,
         }.get(g.connection_type, self.SERIES_COLOR)
         
         gc.SetBrush(wx.Brush(wx.Colour(color.Red(), color.Green(), color.Blue(), 80)))
@@ -476,14 +476,14 @@ class BlockEditor(wx.Panel):
         menu.Append(id_p, "Group as PARALLEL (any can work)")
         menu.Append(id_k, f"Group as K-of-{len(block_ids)} (redundancy)...")
         
-        self.Bind(wx.EVT_MENU, lambda e: self.create_group(block_ids, ConnectionType.SERIES), id=id_s)
-        self.Bind(wx.EVT_MENU, lambda e: self.create_group(block_ids, ConnectionType.PARALLEL), id=id_p)
+        self.Bind(wx.EVT_MENU, lambda e: self.create_group(block_ids, "series"), id=id_s)
+        self.Bind(wx.EVT_MENU, lambda e: self.create_group(block_ids, "parallel"), id=id_p)
         
         def on_kn(e):
             dlg = wx.NumberEntryDialog(self, f"How many must work?", "K:", 
                                        "K-of-N Redundancy", 2, 1, len(block_ids))
             if dlg.ShowModal() == wx.ID_OK:
-                self.create_group(block_ids, ConnectionType.K_OF_N, dlg.GetValue())
+                self.create_group(block_ids, "k_of_n", dlg.GetValue())
             dlg.Destroy()
         
         self.Bind(wx.EVT_MENU, on_kn, id=id_k)
@@ -502,16 +502,16 @@ class BlockEditor(wx.Panel):
         
         dlg = wx.SingleChoiceDialog(self, "Select connection type:", "Group Type", choices)
         
-        idx = {ConnectionType.SERIES: 0, ConnectionType.PARALLEL: 1, ConnectionType.K_OF_N: 2}
+        idx = {"series": 0, "parallel": 1, "k_of_n": 2}
         dlg.SetSelection(idx.get(g.connection_type, 0))
         
         if dlg.ShowModal() == wx.ID_OK:
             sel = dlg.GetSelection()
             if sel == 0:
-                g.connection_type = ConnectionType.SERIES
+                g.connection_type = "series"
                 g.label = "SERIES"
             elif sel == 1:
-                g.connection_type = ConnectionType.PARALLEL
+                g.connection_type = "parallel"
                 g.label = "PARALLEL"
             else:
                 kdlg = wx.NumberEntryDialog(self, "How many must work?", "K:",
@@ -519,7 +519,7 @@ class BlockEditor(wx.Panel):
                 if kdlg.ShowModal() == wx.ID_OK:
                     g.k_value = kdlg.GetValue()
                 kdlg.Destroy()
-                g.connection_type = ConnectionType.K_OF_N
+                g.connection_type = "k_of_n"
                 g.label = f"{g.k_value}-of-{len(g.children)}"
             
             self.Refresh()
@@ -537,7 +537,7 @@ class BlockEditor(wx.Panel):
                     "name": b.name, "label": b.label,
                     "x": b.x, "y": b.y,
                     "is_group": b.is_group, "children": b.children,
-                    "connection_type": b.connection_type.value,
+                    "connection_type": b.connection_type,
                     "k_value": b.k_value,
                 }
                 for bid, b in self.blocks.items()
@@ -555,7 +555,7 @@ class BlockEditor(wx.Panel):
                 id=bid, name=bd["name"], label=bd["label"],
                 x=bd["x"], y=bd["y"],
                 is_group=bd["is_group"], children=bd.get("children", []),
-                connection_type=ConnectionType(bd.get("connection_type", "series")),
+                connection_type=bd.get("connection_type", "series"),
                 k_value=bd.get("k_value", 2)
             )
             self.blocks[bid] = b

@@ -27,11 +27,7 @@ from .component_editor import (
 from .schematic_parser import SchematicParser, create_test_data
 
 
-class ConnectionType:
-    """Types of reliability connections."""
-    SERIES = "series"
-    PARALLEL = "parallel"
-    K_OF_N = "k_of_n"
+# ConnectionType is now just string constants: "series", "parallel", "k_of_n"
 
 
 class SheetPanel(wx.Panel):
@@ -470,9 +466,9 @@ class ReliabilityMainDialog(wx.Dialog):
             if b.is_group:
                 child_rs = [calc(cid) for cid in b.children]
                 
-                if b.connection_type == ConnectionType.SERIES:
+                if b.connection_type == "series":
                     r = r_series(child_rs)
-                elif b.connection_type == ConnectionType.PARALLEL:
+                elif b.connection_type == "parallel":
                     r = r_parallel(child_rs)
                 else:
                     r = r_k_of_n(child_rs, b.k_value)

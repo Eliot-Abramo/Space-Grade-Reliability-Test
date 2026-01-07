@@ -8,16 +8,72 @@ Units:
 - Failure rates (λ): FIT = failures per 10^9 hours (converted to per-hour at output)
 - Temperature: °C
 - Time: hours (for mission), cycles/year (for thermal cycling)
-- Power: Watts
-- Voltage: Volts
-
-Reference: IEC TR 62380:2004 - Reliability data handbook
 """
 
 import math
 from typing import Dict, List, Tuple, Optional, Any
-from dataclasses import dataclass, field
-from enum import Enum
+from dataclasses import dataclass
+
+
+# =============================================================================
+# CONNECTION TYPE - Used by block_editor
+# =============================================================================
+
+class ConnectionType:
+    """Types of reliability connections for block diagrams."""
+    SERIES = "series"
+    PARALLEL = "parallel"
+    K_OF_N = "k_of_n"
+    
+    def __init__(self, value=None):
+        """Allow construction from string value."""
+        if value is None:
+            self._value = self.SERIES
+        else:
+            self._value = value
+    
+    @property
+    def value(self):
+        """Return the string value for serialization."""
+        if hasattr(self, '_value'):
+            return self._value
+        return self.SERIES
+    
+    def __eq__(self, other):
+        if isinstance(other, ConnectionType):
+            return self.value == other.value
+        return self.value == other
+    
+    def __hash__(self):
+        return hash(self.value)
+    
+    def __str__(self):
+        return self.value
+
+
+# =============================================================================
+# COMPONENT PARAMS - For backward compatibility
+# =============================================================================
+
+class ComponentParams:
+    """Parameter container for component calculations."""
+    
+    def __init__(self, **kwargs):
+        self.t_ambient = kwargs.get('t_ambient', 25.0)
+        self.t_junction = kwargs.get('t_junction', 85.0)
+        self.operating_power = kwargs.get('operating_power', 0.01)
+        self.rated_power = kwargs.get('rated_power', 0.125)
+        self.n_cycles = kwargs.get('n_cycles', 5256)
+        self.delta_t = kwargs.get('delta_t', 3.0)
+        self.w_on = kwargs.get('w_on', 1.0)
+        self.voltage_stress = kwargs.get('voltage_stress', 0.5)
+        
+        for k, v in kwargs.items():
+            if not hasattr(self, k):
+                setattr(self, k, v)
+    
+    def to_dict(self):
+        return vars(self)
 
 
 # =============================================================================
@@ -37,9 +93,7 @@ class ActivationEnergy:
     GaAs_MMIC = 4640       # 0.4 eV
 
 
-# -----------------------------------------------------------------------------
-# Table 16: IC Die Parameters
-# -----------------------------------------------------------------------------
+# IC Die Parameters (Table 16)
 IC_DIE_TABLE = {
     "MOS_DIGITAL": {"l1": 3.4e-6, "l2": 1.7, "ea": ActivationEnergy.MOS},
     "MOS_LINEAR": {"l1": 3.4e-6, "l2": 1.7, "ea": ActivationEnergy.MOS},
@@ -77,9 +131,7 @@ IC_TYPE_CHOICES = {
     "RF/Wireless IC": "GaAs_MMIC",
 }
 
-# -----------------------------------------------------------------------------
-# Table 17: IC Package λ3 values
-# -----------------------------------------------------------------------------
+# IC Package Parameters (Table 17)
 IC_PACKAGE_TABLE = {
     "SO": {"formula": "pins", "coef": 0.012, "exp": 1.65},
     "TSSOP": {"formula": "pins", "coef": 0.011, "exp": 1.4},
@@ -115,9 +167,7 @@ IC_PACKAGE_CHOICES = {
     "PDIP-28": ("PDIP", 28),
 }
 
-# -----------------------------------------------------------------------------
-# Table 18: Discrete Device Package λB values (FIT)
-# -----------------------------------------------------------------------------
+# Discrete Package Parameters (Table 18)
 DISCRETE_PACKAGE_TABLE = {
     "TO-92": {"lb": 1.0, "rja": 300},
     "TO-220": {"lb": 5.7, "rja": 60},
@@ -140,7 +190,6 @@ DISCRETE_PACKAGE_TABLE = {
     "1206": {"lb": 1.0},
 }
 
-# Thermal expansion coefficients
 THERMAL_EXPANSION_SUBSTRATE = {
     "FR4 (Epoxy Glass)": 16.0,
     "Polyimide Flex": 6.5,
@@ -148,7 +197,6 @@ THERMAL_EXPANSION_SUBSTRATE = {
     "Aluminum (Metal Core)": 23.0,
 }
 
-# Interface EOS values
 INTERFACE_EOS_VALUES = {
     "Not Interface": {"pi_i": 0, "l_eos": 0},
     "Computer": {"pi_i": 1, "l_eos": 10},
@@ -158,9 +206,6 @@ INTERFACE_EOS_VALUES = {
     "Power Supply": {"pi_i": 1, "l_eos": 40},
 }
 
-# -----------------------------------------------------------------------------
-# Diode/Transistor Base Failure Rates λ0 (FIT)
-# -----------------------------------------------------------------------------
 DIODE_BASE_RATES = {
     "Signal (<1A)": {"l0": 0.07, "power_class": "low"},
     "Recovery/Rectifier (1-3A)": {"l0": 0.1, "power_class": "low"},
@@ -182,7 +227,6 @@ TRANSISTOR_BASE_RATES = {
     "Silicon IGBT": {"l0": 2.0, "power_class": "high", "tech": "igbt"},
 }
 
-# Capacitor Parameters
 CAPACITOR_PARAMS = {
     "Plastic/Paper Film": {"l0": 0.1, "pkg_coef": 1.4e-3, "ea": ActivationEnergy.CAPACITOR_HIGH, "t_ref": 303},
     "Ceramic Class I (C0G/NP0)": {"l0": 0.05, "pkg_coef": 3.3e-3, "ea": ActivationEnergy.CAPACITOR_LOW, "t_ref": 303},
@@ -191,7 +235,6 @@ CAPACITOR_PARAMS = {
     "Aluminum Electrolytic (Non-Solid)": {"l0": 1.3, "pkg_coef": 1.4e-3, "ea": ActivationEnergy.ALUMINUM_CAP, "t_ref": 313},
 }
 
-# Resistor Parameters
 RESISTOR_PARAMS = {
     "Film (Low Dissipation)": {"l0": 0.1, "pkg_coef": 1.4e-3, "temp_coef": 85},
     "Carbon Composition": {"l0": 0.5, "pkg_coef": 1.4e-3, "temp_coef": 60},
@@ -199,7 +242,6 @@ RESISTOR_PARAMS = {
     "SMD Chip Resistor": {"l0": 0.01, "pkg_coef": 3.3e-3, "temp_coef": 55},
 }
 
-# Inductor Parameters
 INDUCTOR_PARAMS = {
     "Fixed (Low Current)": {"l0": 0.2},
     "Variable": {"l0": 0.4},
@@ -208,7 +250,6 @@ INDUCTOR_PARAMS = {
     "Power Transformer": {"l0": 3.0},
 }
 
-# Miscellaneous
 MISC_COMPONENT_RATES = {
     "Crystal Oscillator (XO)": 10.0,
     "VCXO/TCXO": 15.0,
@@ -334,7 +375,7 @@ def lambda_diode(
     lambda_die = l0 * pi_t * w_on
     
     pkg_params = DISCRETE_PACKAGE_TABLE.get(package, {"lb": 1.0})
-    lb = pkg_params["lb"]
+    lb = pkg_params.get("lb", 1.0)
     pi_n = pi_thermal_cycles(n_cycles)
     lambda_package = 2.75e-3 * pi_n * (delta_t ** 0.68) * lb
     
@@ -387,7 +428,7 @@ def lambda_transistor(
     lambda_die = pi_s * l0 * pi_t * w_on
     
     pkg_params = DISCRETE_PACKAGE_TABLE.get(package, {"lb": 1.0})
-    lb = pkg_params["lb"]
+    lb = pkg_params.get("lb", 1.0)
     pi_n = pi_thermal_cycles(n_cycles)
     lambda_package = 2.75e-3 * pi_n * (delta_t ** 0.68) * lb
     
@@ -736,71 +777,100 @@ def calculate_component_lambda(component_type: str, params: Dict[str, Any]) -> D
         return lambda_misc_component(component_type=params.get("component_subtype", "Crystal Oscillator (XO)"), **params)
 
 
-# Legacy compatibility
 def calculate_lambda(component_class: str, params: Dict[str, Any] = None) -> float:
     """Legacy interface for calculate_lambda."""
     if params is None:
         params = {}
     
     cls = component_class.lower()
+    n_cycles = params.get("n_cycles", 5256)
+    delta_t = params.get("delta_t", 3.0)
     
     if "resistor" in cls:
-        return calculate_component_lambda("Resistor", params)["lambda_total"]
-    elif "ceramic" in cls and "capacitor" in cls:
-        params["capacitor_type"] = "Ceramic Class II (X7R/X5R)"
-        return calculate_component_lambda("Capacitor", params)["lambda_total"]
-    elif "tantalum" in cls or "electrolytic" in cls:
-        params["capacitor_type"] = "Tantalum Solid" if "tantalum" in cls else "Aluminum Electrolytic (Non-Solid)"
-        return calculate_component_lambda("Capacitor", params)["lambda_total"]
-    elif "transistor" in cls:
-        return calculate_component_lambda("Transistor", params)["lambda_total"]
-    elif "diode" in cls:
-        return calculate_component_lambda("Diode", params)["lambda_total"]
-    elif "integrated circuit" in cls or cls in ("ic", "mcu", "microcontroller", "fpga"):
-        return calculate_component_lambda("Integrated Circuit", params)["lambda_total"]
-    elif "inductor" in cls:
-        return calculate_component_lambda("Inductor/Transformer", params)["lambda_total"]
-    elif "transformer" in cls:
-        params["inductor_type"] = "Power Transformer"
-        return calculate_component_lambda("Inductor/Transformer", params)["lambda_total"]
-    elif "converter" in cls or "dc-dc" in cls:
-        power = params.get("power_rating", 5.0)
-        return lambda_misc_component("DC-DC Converter (<10W)" if power < 10 else "DC-DC Converter (≥10W)")["lambda_total"]
-    elif "ldo" in cls or "regulator" in cls:
-        params["ic_type"] = "LDO Regulator"
-        return calculate_component_lambda("Integrated Circuit", params)["lambda_total"]
-    elif "crystal" in cls or "oscillator" in cls:
+        result = lambda_resistor(
+            t_ambient=params.get("t_ambient", 25),
+            operating_power=params.get("operating_power", 0.01),
+            rated_power=params.get("rated_power", 0.125),
+            n_cycles=n_cycles, delta_t=delta_t
+        )
+        return result["lambda_total"]
+    
+    if "ceramic" in cls and "capacitor" in cls:
+        result = lambda_capacitor(
+            capacitor_type="Ceramic Class II (X7R/X5R)",
+            t_ambient=params.get("t_ambient", 25),
+            n_cycles=n_cycles, delta_t=delta_t
+        )
+        return result["lambda_total"]
+    
+    if "tantalum" in cls or "electrolytic" in cls:
+        cap_type = "Tantalum Solid" if "tantalum" in cls else "Aluminum Electrolytic (Non-Solid)"
+        result = lambda_capacitor(
+            capacitor_type=cap_type,
+            t_ambient=params.get("t_ambient", 25),
+            n_cycles=n_cycles, delta_t=delta_t
+        )
+        return result["lambda_total"]
+    
+    if "transistor" in cls:
+        result = lambda_transistor(
+            t_junction=params.get("t_junction", 85),
+            n_cycles=n_cycles, delta_t=delta_t
+        )
+        return result["lambda_total"]
+    
+    if "diode" in cls:
+        result = lambda_diode(
+            t_junction=params.get("t_junction", 85),
+            n_cycles=n_cycles, delta_t=delta_t
+        )
+        return result["lambda_total"]
+    
+    if "integrated circuit" in cls or cls in ("ic", "mcu", "microcontroller", "fpga"):
+        result = lambda_integrated_circuit(
+            t_junction=params.get("t_junction", 85),
+            n_cycles=n_cycles, delta_t=delta_t
+        )
+        return result["lambda_total"]
+    
+    if "inductor" in cls:
+        result = lambda_inductor(
+            t_ambient=params.get("t_ambient", 25),
+            n_cycles=n_cycles, delta_t=delta_t
+        )
+        return result["lambda_total"]
+    
+    if "converter" in cls or "dc-dc" in cls:
+        return lambda_misc_component("DC-DC Converter (<10W)", n_cycles=n_cycles, delta_t=delta_t)["lambda_total"]
+    
+    if "ldo" in cls or "regulator" in cls:
+        result = lambda_integrated_circuit(
+            ic_type="BICMOS_LOW_V",
+            t_junction=params.get("t_junction", 100),
+            n_cycles=n_cycles, delta_t=delta_t
+        )
+        return result["lambda_total"]
+    
+    if "crystal" in cls or "oscillator" in cls:
         return lambda_misc_component("Crystal Oscillator (XO)")["lambda_total"]
-    elif "connector" in cls:
+    
+    if "connector" in cls:
         return lambda_misc_component("Connector (per contact)", n_contacts=params.get("n_pins", 10))["lambda_total"]
-    else:
-        return 10e-9
+    
+    # Default
+    return 10e-9
 
-# Alias for compatibility
-reliability = reliability_from_lambda
 
 # =============================================================================
 # BACKWARD COMPATIBILITY EXPORTS
 # =============================================================================
-class ConnectionType:
-    """Types of reliability connections."""
-    SERIES = "series"
-    PARALLEL = "parallel"
-    K_OF_N = "k_of_n"
-
-
-class ComponentParams:
-    """Legacy compatibility class."""
-    def __init__(self, **kwargs):
-        for k, v in kwargs.items():
-            setattr(self, k, v)
-
 
 def component_failure_rate(component_class: str, params: ComponentParams = None) -> float:
     """Legacy function name for calculate_lambda."""
-    param_dict = vars(params) if params else {}
+    param_dict = params.to_dict() if params else {}
     return calculate_lambda(component_class, param_dict)
 
 
-# Alias for old imports
+# Aliases
 ecss_component_failure_rate = component_failure_rate
+reliability = reliability_from_lambda

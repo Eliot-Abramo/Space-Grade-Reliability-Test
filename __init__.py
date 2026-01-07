@@ -12,7 +12,9 @@
 #   - Windows: %APPDATA%\kicad\9.0\scripting\plugins\
 #   - macOS: ~/Library/Preferences/kicad/9.0/scripting/plugins/
 
-from .plugin import ReliabilityPlugin
-
-# Register the plugin
-ReliabilityPlugin().register()
+try:
+    from .plugin import ReliabilityPlugin
+    ReliabilityPlugin().register()
+except Exception as e:
+    import logging
+    logging.warning(f"Could not register ReliabilityPlugin: {e}")
