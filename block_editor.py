@@ -71,6 +71,7 @@ class BlockEditor(wx.Panel):
         # Callbacks
         self.on_selection_change = None
         self.on_structure_change = None
+        self.on_block_activate = None
         
         # Events
         self.Bind(wx.EVT_PAINT, self._on_paint)
@@ -395,13 +396,20 @@ class BlockEditor(wx.Panel):
             self.sel_rect = None
         
         self.Refresh()
-    
-    def _on_dclick(self, event):
-        x, y = event.GetPosition()
-        bid = self._block_at(x, y)
         
-        if bid and self.blocks[bid].is_group:
-            self._edit_group(bid)
+    def _on_dclick(self, event):
+            x, y = event.GetPosition()
+            bid = self._block_at(x, y)
+            
+            if not bid:
+                return
+            
+            b = self.blocks[bid]
+            if b.is_group:
+                self._edit_group(bid)
+            elif self.on_block_activate:
+                # Double-click on sheet block - notify parent
+                self.on_block_activate(bid, b.name)
     
     def _on_right_click(self, event):
         x, y = event.GetPosition()

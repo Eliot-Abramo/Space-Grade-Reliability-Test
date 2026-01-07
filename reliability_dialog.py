@@ -344,6 +344,7 @@ class ReliabilityMainDialog(wx.Dialog):
         return panel
     
     def _bind_events(self):
+        self.editor.on_block_activate = self._on_block_activate
         self.sheet_panel.on_add = self._add_sheet
         self.sheet_panel.on_edit = self._edit_sheet_components
         self.editor.on_selection_change = self._on_block_select
@@ -516,7 +517,41 @@ class ReliabilityMainDialog(wx.Dialog):
                     data.get("lambda", 0),
                     data.get("r", 1)
                 )
-    
+
+    def _on_block_activate(self, block_id: str, sheet_path: str):
+            """Handle double-click on a sheet block - open component editor."""
+            components = self.parser.get_sheet_components(sheet_path) if self.parser else []
+            
+            if not components:
+                wx.MessageBox(f"No components found in {sheet_path}", "Info", wx.ICON_INFORMATION)
+                return
+            
+            # Convert to ComponentData for the batch editor
+            comp_data_list = []
+            for comp in components:
+                comp_type = classify_component(comp.reference, comp.value, comp.fields)
+                comp_data_list.append(ComponentData(
+                    reference=comp.reference,
+                    value=comp.value,
+                    component_type=comp_type,
+                    fields=dict(comp.fields)
+                ))
+            
+            dlg = BatchComponentEditorDialog(self, comp_data_list, sheet_path)
+            if dlg.ShowModal() == wx.ID_OK:
+                # Update fields back to parser components
+                for cd in dlg.components:
+                    for comp in components:
+                        if comp.reference == cd.reference:
+                            comp.fields.update(cd.fields)
+                            break
+                
+                # Recalculate
+                self._recalculate_sheet(sheet_path)
+                self.status.SetLabel(f"Updated {len(components)} components in {sheet_path}")
+            
+            dlg.Destroy()
+            
     def _on_calculate(self, event):
         sys_r, sys_lam = self._calculate_system()
         hours = self.settings_panel.get_hours()
